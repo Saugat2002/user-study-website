@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: user-study
+    runtime: python
+    buildCommand: echo "No build step needed"
+    startCommand: python server.py
+    envVars:
+      - key: WEBHOOK_URL
+        sync: false   # set manually in Render dashboard (paste your Apps Script URL)

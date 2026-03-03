@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Quality User Study</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+    color: #e0e0e0; min-height: 100vh;
+  }
+  /* ─── Header ─────────────────────────────────────────────── */
+  #header {
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 16px 40px; display: flex; align-items: center;
+    justify-content: space-between; position: sticky; top: 0; z-index: 10;
+  }
+  #header h1 { margin: 0; font-size: 18px; color: #fff; }
+  #header .sub { font-size: 12px; color: #888; margin-top: 2px; }
+  #header .user-tag { font-size: 13px; color: #888; }
+  #header .user-tag span { color: #aaa; font-weight: 600; }
+  /* ─── Container ───────────────────────────────────────────── */
+  #app { max-width: 1300px; margin: 0 auto; padding: 28px 24px 60px; }
+  /* ─── Progress bar ─────────────────────────────────────────── */
+  #progress { display: flex; gap: 6px; align-items: center; margin-bottom: 22px; }
+  .pdot {
+    height: 10px; border-radius: 5px; transition: all .3s;
+    background: rgba(255,255,255,0.15);
+  }
+  .pdot.done { background: #6c63ff; }
+  .pdot.active { background: #9b59b6; width: 28px !important; }
+  #prog-label { font-size: 12px; color: #555; margin-left: 6px; }
+  /* ─── Cards ───────────────────────────────────────────────── */
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 32px 36px; margin-bottom: 24px;
+  }
+  .card h2 { font-size: 22px; color: #fff; margin: 0 0 10px; }
+  .card p { color: #999; font-size: 14px; line-height: 1.6; }
+  label { display: block; font-size: 13px; color: #aaa; margin-bottom: 6px; }
+  input[type=text] {
+    width: 100%; max-width: 360px; padding: 10px 14px;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; color: #fff; font-size: 15px; outline: none;
+  }
+  input[type=text]:focus { border-color: #6c63ff; }
+  .err { color: #ff6b6b; font-size: 13px; margin-top: 6px; }
+  /* ─── Buttons ─────────────────────────────────────────────── */
+  .btn-primary {
+    background: linear-gradient(90deg, #6c63ff, #9b59b6);
+    color: #fff; border: none; border-radius: 8px;
+    padding: 12px 28px; font-size: 15px; font-weight: 600; cursor: pointer;
+    transition: opacity .2s;
+  }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary {
+    background: rgba(255,255,255,0.08); color: #ddd;
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 8px;
+    padding: 12px 28px; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .btn-submit {
+    background: linear-gradient(90deg, #27ae60, #2ecc71);
+    color: #fff; border: none; border-radius: 8px;
+    padding: 12px 28px; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+  /* ─── Warning banner ──────────────────────────────────────── */
+  .warn {
+    background: rgba(255,193,7,0.12); border: 1px solid rgba(255,193,7,0.3);
+    border-radius: 8px; padding: 10px 16px; color: #ffc107;
+    font-size: 13px; margin-bottom: 16px;
+  }
+  /* ─── Sample rows ─────────────────────────────────────────── */
+  .sample-row {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px; padding: 18px 18px 10px; margin-bottom: 20px;
+    transition: border-color .2s;
+  }
+  .sample-row.answered { border-color: rgba(108,99,255,0.3); }
+  .prompt-line {
+    display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px;
+  }
+  .sample-num {
+    font-size: 12px; font-weight: 700; color: #6c63ff; min-width: 32px;
+  }
+  .prompt-text { font-size: 13px; color: #aaa; font-style: italic; }
+  .images-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  }
+  .img-cell {
+    border-radius: 8px; overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.08);
+    background: rgba(0,0,0,0.3); cursor: pointer;
+    transition: border-color .2s, transform .1s;
+    position: relative;
+  }
+  .img-cell:hover { border-color: rgba(108,99,255,0.5); transform: translateY(-1px); }
+  .img-cell.selected { border-color: #6c63ff; }
+  .img-cell img {
+    width: 100%; display: block; aspect-ratio: 1/1; object-fit: cover;
+  }
+  .opt-label {
+    position: absolute; top: 7px; left: 7px;
+    background: rgba(0,0,0,0.65); color: #fff;
+    font-size: 11px; font-weight: 700; border-radius: 4px;
+    padding: 2px 7px; letter-spacing: 0.5px;
+  }
+  .selected-badge {
+    position: absolute; bottom: 7px; right: 7px;
+    background: #6c63ff; color: #fff;
+    font-size: 11px; border-radius: 20px;
+    padding: 2px 8px; font-weight: 700;
+  }
+  .radio-row {
+    display: flex; align-items: center; justify-content: center;
+    padding: 9px 0 4px; gap: 7px;
+  }
+  .radio-row input[type=radio] { accent-color: #6c63ff; width: 15px; height: 15px; cursor: pointer; }
+  .radio-row span { font-size: 12px; color: #666; }
+  .radio-row span.active { color: #9b8fff; }
+  /* ─── Nav row ──────────────────────────────────────────────── */
+  .nav-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 24px;
+  }
+  /* ─── Summary table ───────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  th {
+    padding: 9px 14px; background: rgba(255,255,255,0.06);
+    color: #aaa; font-size: 13px; text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  td {
+    padding: 9px 14px; font-size: 14px; color: #ddd;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .bar-cell div {
+    height: 8px; border-radius: 4px; min-width: 0; transition: width .4s;
+  }
+  /* ─── Hidden pages ─────────────────────────────────────────── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ─── Sticky bottom nav ─────────────────────────────────────── */
+  #sticky-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    display: none; justify-content: space-between; align-items: center;
+    padding: 12px 40px 16px;
+    background: rgba(10,10,20,0.97);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    z-index: 50;
+  }
+  #sticky-nav.visible { display: flex; }
+  body.has-sticky-nav #app { padding-bottom: 90px; }
+
+  /* ─── Responsive: tablet ────────────────────────────────────── */
+  @media (max-width: 900px) {
+    #app { padding: 20px 16px 90px; }
+    .images-grid { gap: 8px; }
+  }
+
+  /* ─── Responsive: mobile ────────────────────────────────────── */
+  @media (max-width: 640px) {
+    #header { padding: 10px 16px; }
+    #header h1 { font-size: 14px; }
+    #header .sub { font-size: 11px; }
+    #header .user-tag { font-size: 11px; }
+    #app { padding: 14px 10px 90px; }
+    .card { padding: 18px 14px; }
+    .card h2 { font-size: 17px; }
+    .card p { font-size: 13px; }
+    input[type=text] { font-size: 16px; } /* prevents iOS zoom */
+    .images-grid { grid-template-columns: repeat(2, 1fr); gap: 7px; }
+    .sample-row { padding: 12px 10px 8px; margin-bottom: 14px; }
+    .prompt-text { font-size: 12px; }
+    .opt-label { font-size: 10px; padding: 2px 5px; }
+    .selected-badge { font-size: 10px; padding: 2px 6px; bottom: 5px; right: 5px; }
+    .radio-row { padding: 7px 0 3px; gap: 5px; }
+    .radio-row span { font-size: 11px; }
+    .btn-primary, .btn-secondary, .btn-submit {
+      padding: 11px 16px; font-size: 14px;
+    }
+    #sticky-nav { padding: 10px 16px 14px; gap: 10px; }
+    #sticky-nav button { flex: 1; }
+    .warn { font-size: 12px; padding: 8px 12px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 10px; }
+  }
+
+  @media (max-width: 380px) {
+    .images-grid { gap: 5px; }
+    #header h1 { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div>
+    <h1>Image Quality User Study</h1>
+    <div class="sub" id="header-sub">Compare AI-generated images across methods</div>
+  </div>
+  <div class="user-tag" id="user-tag" style="display:none">
+    Participant: <span id="user-tag-name"></span>
+  </div>
+</div>
+
+<div id="app">
+  <!-- ── Page 0: Name entry ─────────────────────────────────── -->
+  <div class="page active" id="page-0">
+    <div class="card">
+      <h2>Welcome to the User Study</h2>
+      <p>
+        You will be shown sets of AI-generated images produced by four different methods.
+        For each sample, select the image you find most <strong style="color:#ddd">realistic and high-quality</strong>.
+        The column order is randomised per sample so you cannot guess which method is which.
+      </p>
+      <p>This study has <strong style="color:#ddd">64 samples</strong> across two sections.<br>
+        Section 1: 30 × 2D images &nbsp;·&nbsp; Section 2: 34 × 3D images</p>
+      <label>Your Name *</label>
+      <input type="text" id="name-input" placeholder="Enter your name" maxlength="60" />
+      <div class="err" id="name-err"></div>
+      <div style="margin-top:20px">
+        <button class="btn-primary" id="start-btn" onclick="startStudy()">Start Study →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Study pages 1–3 injected here by JS ────────────────── -->
+
+  <!-- ── Page 4: Done ───────────────────────────────────────── -->
+  <div class="page" id="page-done">
+    <div class="card" id="done-card">
+      <h2 id="done-title">Submitting…</h2>
+      <p id="done-msg"></p>
+      <div id="summary-area"></div>
+      <div style="margin-top:20px">
+        <a href="index.html" class="btn-secondary" style="text-decoration:none;display:inline-block">← Start Over</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="progress" style="display:none">
+  <div id="prog-label"></div>
+</div>
+
+<div id="sticky-nav">
+  <button class="btn-secondary" id="snav-back" onclick="goBack()">← Back</button>
+  <button class="btn-primary"   id="snav-next">Next →</button>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   CONFIG
+   ═══════════════════════════════════════════════════════════════ */
+const METHODS       = ['sd', 'ddpo', 'b2', 'ours'];
+const METHOD_LABELS = { sd:'SD', ddpo:'DDPO', b2:'B2Diff', ours:'Ours' };
+const METHOD_COLORS = { sd:'#888', ddpo:'#e67e22', b2:'#27ae60', ours:'#6c63ff' };
+const SAMPLES_PER_PAGE   = 10;
+const SAVE_URL           = 'http://localhost:8081/save';
+const REQUIRE_ALL_ANSWERS = false; // set to true to block Next until every row is answered
+
+/* Two sections: 2D (images/) and 3D (3d/).
+   Section 1 sample indices: 1–30
+   Section 2 sample indices: 31–60  (offset keeps answers/colOrders keys unique) */
+const SECTIONS = [
+  {
+    id:         'sec2d',
+    label:      '2D Images',
+    pages:      3,
+    samples:    30,
+    idxOffset:  0,          // global sample index = local idx + offset
+    imgPath:    (method, localIdx, _filename) => `images/${method}/${localIdx}.png`,
+    getPrompt:  (localIdx) => prompts2d[localIdx] || prompts2d[String(localIdx)] || '',
+  },
+  {
+    id:         'sec3d',
+    label:      '3D Images',
+    pages:      4,
+    samples:    34,
+    idxOffset:  30,         // global sample index = local idx + 30
+    imgPath:    (method, _localIdx, filename) => `3d/${method}/${filename}`,
+    getPrompt:  (_localIdx) => '',
+  },
+];
+
+/* PAGE_FLOW: ordered list of page element IDs the user moves through */
+const PAGE_FLOW = [
+  'page-0',      // name entry
+  'page-1', 'page-2', 'page-3',          // section 1 (2D)
+  'page-break',                           // section divider
+  'page-4', 'page-5', 'page-6', 'page-7',// section 2 (3D)
+  'page-done',
+];
+
+/* ═══════════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════════ */
+let username  = '';
+let flowIdx   = 0;
+let answers   = {};     // { globalSampleIdx: method }
+let colOrders = {};     // { globalSampleIdx: [method, ...] }
+let prompts2d = {};     // loaded from images/prompts.json
+let samples3d = [];     // loaded from 3d/samples.json  (array of 30 filenames)
+const sessionSeed = Math.floor(Math.random() * 1e9);
+
+/* ═══════════════════════════════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════════════════════════════ */
+function seededShuffle(arr, seed) {
+  const a = [...arr];
+  let s = seed >>> 0;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = Math.imul(s, 1664525) + 1013904223 >>> 0;
+    const j = s % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function initOrders() {
+  const totalGlobal = SECTIONS.reduce((s, sec) => s + sec.samples, 0);
+  for (let g = 1; g <= totalGlobal; g++) {
+    colOrders[g] = seededShuffle(METHODS, (sessionSeed * 37 + g * 13) >>> 0);
+  }
+}
+
+/* Correct page number = sum of all previous sections' pages + page within section */
+function pageNumFor(sec, pgWithinSec) {
+  let offset = 0;
+  for (const s of SECTIONS) {
+    if (s === sec) break;
+    offset += s.pages;
+  }
+  return offset + pgWithinSec;
+}
+
+/* Which section owns a given flow page index? */
+function sectionForFlowIdx(fi) {
+  // flow: 0=name, 1-3=2D pages, 4=break, 5-8=3D pages, 9=done
+  if (fi >= 1 && fi <= 3) return { sec: SECTIONS[0], pgWithinSec: fi };
+  if (fi >= 5 && fi <= 8) return { sec: SECTIONS[1], pgWithinSec: fi - 4 };
+  return null;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LOAD DATA
+   ═══════════════════════════════════════════════════════════════ */
+async function loadData() {
+  try {
+    const r = await fetch('images/prompts.json');
+    prompts2d = await r.json();
+  } catch (_) { /* prompts stay empty */ }
+
+  try {
+    const r = await fetch('3d/samples.json');
+    samples3d = await r.json();
+  } catch (_) {
+    // fallback: generate placeholder names
+    for (let i = 0; i < 30; i++) samples3d.push(`sample_${String(i+1).padStart(2,'0')}.png`);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BUILD PAGES
+   ═══════════════════════════════════════════════════════════════ */
+function buildStudyPages() {
+  const app    = document.getElementById('app');
+  const doneEl = document.getElementById('page-done');
+
+  SECTIONS.forEach((sec, secIdx) => {
+    for (let pg = 1; pg <= sec.pages; pg++) {
+      const pageNum  = pageNumFor(sec, pg);
+      const startLoc = (pg - 1) * SAMPLES_PER_PAGE + 1; // local 1-based
+      const endLoc   = Math.min(pg * SAMPLES_PER_PAGE, sec.samples);
+
+      const div = document.createElement('div');
+      div.className = 'page';
+      div.id = `page-${pageNum}`;
+
+      let rows = '';
+      for (let loc = startLoc; loc <= endLoc; loc++) {
+        const g        = loc + sec.idxOffset;            // global index
+        const filename = sec.id === 'sec3d' ? samples3d[loc - 1] : `${loc}.png`;
+        const prompt   = sec.getPrompt(loc);
+        const order    = colOrders[g];
+        let cells = '';
+        order.forEach((method, colIdx) => {
+          const src = sec.imgPath(method, loc, filename);
+          cells += `
+            <div class="img-cell" id="cell-${g}-${method}"
+                 onclick="selectMethod(${g},'${method}')">
+              <div class="opt-label">Option ${colIdx + 1}</div>
+              <img src="${src}" alt="option ${colIdx+1}" loading="lazy"
+                   onerror="this.parentElement.style.background='#1a1a2e'" />
+              <div class="radio-row">
+                <input type="radio" name="s${g}" id="r-${g}-${method}"
+                       onchange="selectMethod(${g},'${method}')"
+                       onclick="event.stopPropagation()" />
+                <span id="rlabel-${g}-${method}">Prefer this</span>
+              </div>
+            </div>`;
+        });
+
+        rows += `
+          <div class="sample-row" id="row-${g}">
+            <div class="prompt-line">
+              <span class="sample-num">#${loc}</span>
+              ${prompt ? `<span class="prompt-text">${prompt}</span>` : ''}
+            </div>
+            <div class="images-grid">${cells}</div>
+          </div>`;
+      }
+
+      div.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;
+                    margin-bottom:16px;flex-wrap:wrap;gap:6px">
+          <h2 style="margin:0;font-size:20px;color:#fff">
+            ${sec.label} — Samples ${startLoc}–${endLoc}
+          </h2>
+          <span style="font-size:13px;color:#666">Select the best image in each row</span>
+        </div>
+        <div class="warn" id="warn-${pageNum}" style="display:none">
+          ⚠ <span id="warn-count-${pageNum}"></span> sample(s) not yet answered on this page.
+        </div>
+        ${rows}`;
+
+      app.insertBefore(div, doneEl);
+    }
+  });
+
+  /* Section break page */
+  const brk = document.createElement('div');
+  brk.className = 'page';
+  brk.id = 'page-break';
+  brk.innerHTML = `
+    <div class="card" style="text-align:center;padding:48px 36px">
+      <div style="font-size:48px;margin-bottom:16px">🎉</div>
+      <h2 style="color:#fff;margin:0 0 12px">Section 1 Complete!</h2>
+      <p style="color:#999;max-width:480px;margin:0 auto 28px">
+        You've finished the 2D image comparisons.<br>
+        Next up: <strong style="color:#ddd">3D image comparisons</strong> — same task, different images.
+      </p>
+      <button class="btn-primary" onclick="navigate(1)" style="font-size:16px;padding:14px 36px">
+        Continue to 3D Section →
+      </button>
+    </div>`;
+  app.insertBefore(brk, doneEl);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SELECTION
+   ═══════════════════════════════════════════════════════════════ */
+function selectMethod(globalIdx, method) {
+  const prev = answers[globalIdx];
+  if (prev) {
+    const prevCell  = document.getElementById(`cell-${globalIdx}-${prev}`);
+    const prevBadge = prevCell && prevCell.querySelector('.selected-badge');
+    if (prevCell)  prevCell.classList.remove('selected');
+    if (prevBadge) prevBadge.remove();
+    const prevLabel = document.getElementById(`rlabel-${globalIdx}-${prev}`);
+    const prevRadio = document.getElementById(`r-${globalIdx}-${prev}`);
+    if (prevLabel) prevLabel.classList.remove('active');
+    if (prevRadio) prevRadio.checked = false;
+  }
+
+  answers[globalIdx] = method;
+
+  const cell  = document.getElementById(`cell-${globalIdx}-${method}`);
+  const label = document.getElementById(`rlabel-${globalIdx}-${method}`);
+  const radio = document.getElementById(`r-${globalIdx}-${method}`);
+  if (cell) {
+    cell.classList.add('selected');
+    if (!cell.querySelector('.selected-badge')) {
+      const badge = document.createElement('div');
+      badge.className = 'selected-badge';
+      badge.textContent = '✓ Selected';
+      cell.appendChild(badge);
+    }
+  }
+  if (label) label.classList.add('active');
+  if (radio) radio.checked = true;
+
+  const row = document.getElementById(`row-${globalIdx}`);
+  if (row) row.classList.add('answered');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NAVIGATION
+   ═══════════════════════════════════════════════════════════════ */
+function showPage(fi) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById(PAGE_FLOW[fi]);
+  if (el) el.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  updateHeader(fi);
+  updateProgress(fi);
+  updateStickyNav(fi);
+}
+
+/* fi = flow index */
+function navigate(delta) {
+  flowIdx = Math.max(0, Math.min(PAGE_FLOW.length - 1, flowIdx + delta));
+  showPage(flowIdx);
+}
+
+function startStudy() {
+  const val = document.getElementById('name-input').value.trim();
+  const err = document.getElementById('name-err');
+  if (!val) { err.textContent = 'Please enter your name to continue.'; return; }
+  err.textContent = '';
+  username = val;
+  flowIdx  = 1;
+  showPage(flowIdx);
+}
+
+function goBack() {
+  if (flowIdx <= 1) { flowIdx = 0; showPage(0); return; }
+  // skip break page when going back
+  if (PAGE_FLOW[flowIdx - 1] === 'page-break') flowIdx -= 2;
+  else flowIdx--;
+  showPage(flowIdx);
+}
+
+function goNext(pageNum, startG, endG) {
+  const missing = [];
+  for (let g = startG; g <= endG; g++) {
+    if (!answers[g]) missing.push(g);
+  }
+  const warn = document.getElementById(`warn-${pageNum}`);
+  const wc   = document.getElementById(`warn-count-${pageNum}`);
+  if (missing.length > 0 && REQUIRE_ALL_ANSWERS) {
+    warn.style.display = 'block';
+    wc.textContent = missing.length;
+    warn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  warn.style.display = 'none';
+
+  // last page of last section → submit
+  if (PAGE_FLOW[flowIdx + 1] === 'page-done') {
+    submitStudy();
+  } else {
+    navigate(1);
+  }
+}
+
+function updateStickyNav(fi) {
+  const nav     = document.getElementById('sticky-nav');
+  const nextBtn = document.getElementById('snav-next');
+  const info    = sectionForFlowIdx(fi);
+
+  if (!info) {
+    nav.classList.remove('visible');
+    document.body.classList.remove('has-sticky-nav');
+    return;
+  }
+
+  nav.classList.add('visible');
+  document.body.classList.add('has-sticky-nav');
+
+  const { sec, pgWithinSec } = info;
+  const startLoc = (pgWithinSec - 1) * SAMPLES_PER_PAGE + 1;
+  const endLoc   = Math.min(pgWithinSec * SAMPLES_PER_PAGE, sec.samples);
+  const startG   = startLoc + sec.idxOffset;
+  const endG     = endLoc   + sec.idxOffset;
+  const pageNum  = pageNumFor(sec, pgWithinSec);
+  const isLast   = PAGE_FLOW[fi + 1] === 'page-done';
+
+  nextBtn.className   = isLast ? 'btn-submit' : 'btn-primary';
+  nextBtn.textContent = isLast ? 'Submit Study ✓' : 'Next →';
+  nextBtn.onclick     = () => goNext(pageNum, startG, endG);
+}
+
+function updateHeader(fi) {
+  const sub   = document.getElementById('header-sub');
+  const utag  = document.getElementById('user-tag');
+  const uname = document.getElementById('user-tag-name');
+  const info  = sectionForFlowIdx(fi);
+
+  if (fi === 0) {
+    sub.textContent    = 'Compare AI-generated images across methods';
+    utag.style.display = 'none';
+  } else if (PAGE_FLOW[fi] === 'page-done') {
+    sub.textContent    = 'Study complete';
+    utag.style.display = 'block';
+    uname.textContent  = username;
+  } else if (PAGE_FLOW[fi] === 'page-break') {
+    sub.textContent    = 'Section 1 of 2 complete';
+    utag.style.display = 'block';
+    uname.textContent  = username;
+  } else if (info) {
+    const totalStudyPages = SECTIONS.reduce((s, sec) => s + sec.pages, 0);
+    const overallPage     = pageNumFor(info.sec, info.pgWithinSec);
+    sub.textContent    = `${info.sec.label}  ·  Page ${info.pgWithinSec} of ${info.sec.pages}  ·  Overall ${overallPage}/${totalStudyPages}`;
+    utag.style.display = 'block';
+    uname.textContent  = username;
+  }
+}
+
+function updateProgress(fi) {
+  const bar  = document.getElementById('progress');
+  const info = sectionForFlowIdx(fi);
+  if (!info) { bar.style.display = 'none'; return; }
+
+  const { sec, pgWithinSec } = info;
+  const totalStudyPages = SECTIONS.reduce((s, s2) => s + s2.pages, 0);
+  const overallPage     = pageNumFor(sec, pgWithinSec);
+
+  bar.style.display = 'flex';
+  bar.innerHTML = '';
+
+  SECTIONS.forEach((s, si) => {
+    const lbl = document.createElement('span');
+    lbl.textContent = s.label;
+    lbl.style.cssText = `font-size:11px;color:${s === sec ? '#aaa' : '#444'};margin-right:2px`;
+    bar.appendChild(lbl);
+
+    for (let i = 1; i <= s.pages; i++) {
+      const globalI = pageNumFor(s, i);
+      const d = document.createElement('div');
+      d.className = 'pdot'
+        + (globalI < overallPage ? ' done' : globalI === overallPage ? ' active' : '');
+      d.style.width = (globalI === overallPage ? '28' : '10') + 'px';
+      bar.appendChild(d);
+    }
+
+    if (si < SECTIONS.length - 1) {
+      const sep = document.createElement('span');
+      sep.textContent = '|';
+      sep.style.cssText = 'color:#333;font-size:12px;margin:0 4px';
+      bar.appendChild(sep);
+    }
+  });
+
+  const lbl = document.createElement('span');
+  lbl.textContent = `${overallPage}/${totalStudyPages}`;
+  lbl.style.cssText = 'font-size:12px;color:#666;margin-left:8px';
+  bar.appendChild(lbl);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SUBMIT
+   ═══════════════════════════════════════════════════════════════ */
+function buildResults() {
+  const counts  = { sd: 0, ddpo: 0, b2: 0, ours: 0 };
+  const details = { sec2d: {}, sec3d: {} };
+
+  SECTIONS.forEach(sec => {
+    for (let loc = 1; loc <= sec.samples; loc++) {
+      const g      = loc + sec.idxOffset;
+      const method = answers[g];
+      if (method) {
+        counts[method] = (counts[method] || 0) + 1;
+        const filename = sec.id === 'sec3d' ? samples3d[loc - 1] : `${loc}.png`;
+        details[sec.id][loc] = {
+          prompt:           sec.getPrompt(loc),
+          filename,
+          preferred_method: method,
+          column_order:     colOrders[g],
+        };
+      }
+    }
+  });
+
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  const percentages = {};
+  METHODS.forEach(m => { percentages[m] = total > 0 ? +((counts[m] / total) * 100).toFixed(1) : 0; });
+  return { username, session_seed: sessionSeed, timestamp: new Date().toISOString(),
+           summary: { counts, percentages, total }, details };
+}
+
+async function submitStudy() {
+  flowIdx = PAGE_FLOW.indexOf('page-done');
+  showPage(flowIdx);
+  const data = buildResults();
+
+  const doneTitle = document.getElementById('done-title');
+  const doneMsg   = document.getElementById('done-msg');
+
+  try {
+    const res  = await fetch(SAVE_URL, { method:'POST',
+      headers: { 'Content-Type':'application/json' }, body: JSON.stringify(data) });
+    const json = await res.json();
+    if (json.status === 'ok') {
+      doneTitle.textContent = `✓ Thank you, ${username}!`;
+      doneTitle.style.color = '#2ecc71';
+      doneMsg.textContent   = `Your responses have been saved as: ${json.file}`;
+    } else { throw new Error(json.message); }
+  } catch (e) {
+    doneTitle.textContent = `✓ Study Complete — ${username}`;
+    doneTitle.style.color = '#f0c040';
+    doneMsg.innerHTML =
+      `Server not available (${e.message || 'could not connect'}).<br>
+       <button class="btn-primary" onclick="downloadJSON()" style="margin-top:12px">
+         ⬇ Download Results JSON
+       </button>`;
+    window.pendingResults = data;
+  }
+  renderSummary(data);
+}
+
+function downloadJSON() {
+  const data = window.pendingResults;
+  if (!data) return;
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const safe = data.username.replace(/[^a-z0-9_-]/gi, '_');
+  a.download = `${safe}_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.json`;
+  a.href = url; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function renderSummary(data) {
+  const area = document.getElementById('summary-area');
+  const { counts, percentages, total } = data.summary;
+  let rows = '';
+  METHODS.forEach(m => {
+    const c = counts[m] || 0, pct = percentages[m] || 0;
+    rows += `<tr>
+      <td>${METHOD_LABELS[m]}</td><td>${c}</td><td>${pct}%</td>
+      <td class="bar-cell"><div style="width:${pct}%;background:${METHOD_COLORS[m]}"></div></td>
+    </tr>`;
+  });
+  area.innerHTML = `
+    <h3 style="color:#ddd;font-size:16px;margin-top:28px">Your Preference Summary</h3>
+    <p style="color:#888;font-size:13px">${total} samples answered across both sections</p>
+    <table>
+      <thead><tr><th>Method</th><th>Count</th><th>%</th><th style="width:200px">Bar</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════════ */
+(async function init() {
+  initOrders();
+  await loadData();
+  buildStudyPages();
+  document.getElementById('name-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') startStudy();
+  });
+})();
+</script>
+
+<!-- Progress bar rendered outside #app so it's always visible -->
+<script>
+  // Move progress bar into a sticky position below header
+  const prog = document.getElementById('progress');
+  document.getElementById('header').after(prog);
+  prog.style.cssText = `
+    display:none; gap:6px; align-items:center; padding:10px 40px;
+    background:rgba(255,255,255,0.02); border-bottom:1px solid rgba(255,255,255,0.05);
+  `;
+</script>
+</body>
+</html>
