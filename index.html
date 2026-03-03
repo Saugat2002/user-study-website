@@ -168,6 +168,21 @@
   .bar-cell div {
     height: 8px; border-radius: 4px; min-width: 0; transition: width .4s;
   }
+  /* ─── None option (3D only) ─────────────────────────────────── */
+  .none-option {
+    margin-top: 10px; width: 100%;
+    padding: 10px 18px;
+    border: 2px dashed #d0d3de; border-radius: 8px;
+    background: #fafafa; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    transition: border-color .2s, background .2s;
+    font-size: 13px; color: #888;
+  }
+  .none-option:hover { border-color: #a09ee0; background: #f4f3ff; color: #5b52d6; }
+  .none-option.selected {
+    border-color: #5b52d6; background: #eeeeff; color: #5b52d6; font-weight: 600;
+  }
+  .none-option input[type=radio] { accent-color: #5b52d6; width: 15px; height: 15px; cursor: pointer; }
   /* ─── Hidden pages ─────────────────────────────────────────── */
   .page { display: none; }
   .page.active { display: block; }
@@ -248,8 +263,8 @@
         For each sample, select the image you find most <strong style="color:#ddd">realistic and high-quality</strong>.
         The column order is randomised per sample so you cannot guess which method is which.
       </p>
-      <p>This study has <strong style="color:#ddd">64 samples</strong> across two sections.<br>
-        Section 1: 30 × 2D images &nbsp;·&nbsp; Section 2: 34 × 3D images</p>
+      <p>This study has <strong style="color:#ddd">50 samples</strong> across two sections.<br>
+        Section 1: 30 × 2D images &nbsp;·&nbsp; Section 2: 20 × 3D images</p>
       <label>Your Name *</label>
       <input type="text" id="name-input" placeholder="Enter your name" maxlength="60" />
       <div class="err" id="name-err"></div>
@@ -297,7 +312,7 @@ const METHOD_LABELS = { sd:'SD', ddpo:'DDPO', b2:'B2Diff', ours:'Ours' };
 const METHOD_COLORS = { sd:'#888', ddpo:'#e67e22', b2:'#27ae60', ours:'#6c63ff' };
 const SAMPLES_PER_PAGE   = 10;
 const SAVE_URL           = 'https://user-study-website.onrender.com/save';
-const REQUIRE_ALL_ANSWERS = false; // set to false to allow proceeding with unanswered rows
+const REQUIRE_ALL_ANSWERS = true; // set to false to allow proceeding with unanswered rows
 
 /* Two sections: 2D (images/) and 3D (3d/).
    Section 1 sample indices: 1–30
@@ -315,8 +330,8 @@ const SECTIONS = [
   {
     id:         'sec3d',
     label:      '3D Images',
-    pages:      4,
-    samples:    34,
+    pages:      2,
+    samples:    20,
     idxOffset:  30,         // global sample index = local idx + 30
     imgPath:    (method, _localIdx, filename) => `3d/${method}/${filename}`,
     getPrompt:  (_localIdx) => 'A tv stand infront of a bed facing each other',
@@ -328,7 +343,7 @@ const PAGE_FLOW = [
   'page-0',      // name entry
   'page-1', 'page-2', 'page-3',          // section 1 (2D)
   'page-break',                           // section divider
-  'page-4', 'page-5', 'page-6', 'page-7',// section 2 (3D)
+  'page-4', 'page-5',                    // section 2 (3D)
   'page-done',
 ];
 
@@ -376,9 +391,9 @@ function pageNumFor(sec, pgWithinSec) {
 
 /* Which section owns a given flow page index? */
 function sectionForFlowIdx(fi) {
-  // flow: 0=name, 1-3=2D pages, 4=break, 5-8=3D pages, 9=done
+  // flow: 0=name, 1-3=2D pages, 4=break, 5-6=3D pages, 7=done
   if (fi >= 1 && fi <= 3) return { sec: SECTIONS[0], pgWithinSec: fi };
-  if (fi >= 5 && fi <= 8) return { sec: SECTIONS[1], pgWithinSec: fi - 4 };
+  if (fi >= 5 && fi <= 6) return { sec: SECTIONS[1], pgWithinSec: fi - 4 };
   return null;
 }
 
@@ -441,6 +456,14 @@ function buildStudyPages() {
             </div>`;
         });
 
+        const noneCell = sec.id === 'sec3d' ? `
+          <div class="none-option" id="cell-${g}-none" onclick="selectMethod(${g},'none')">
+            <input type="radio" name="s${g}" id="r-${g}-none"
+                   onchange="selectMethod(${g},'none')"
+                   onclick="event.stopPropagation()" />
+            <span id="rlabel-${g}-none">None of the above — I don't prefer any option</span>
+          </div>` : '';
+
         rows += `
           <div class="sample-row" id="row-${g}">
             <div class="prompt-line">
@@ -448,6 +471,7 @@ function buildStudyPages() {
               ${prompt ? `<span class="prompt-text">${prompt}</span>` : ''}
             </div>
             <div class="images-grid">${cells}</div>
+            ${noneCell}
           </div>`;
       }
 
@@ -494,11 +518,12 @@ function selectMethod(globalIdx, method) {
   const prev = answers[globalIdx];
   if (prev) {
     const prevCell  = document.getElementById(`cell-${globalIdx}-${prev}`);
-    const prevBadge = prevCell && prevCell.querySelector('.selected-badge');
-    if (prevCell)  prevCell.classList.remove('selected');
-    if (prevBadge) prevBadge.remove();
     const prevLabel = document.getElementById(`rlabel-${globalIdx}-${prev}`);
     const prevRadio = document.getElementById(`r-${globalIdx}-${prev}`);
+    if (prevCell)  prevCell.classList.remove('selected');
+    // remove ✓ badge only from img-cells, not from none-option
+    const prevBadge = prevCell && prevCell.querySelector('.selected-badge');
+    if (prevBadge) prevBadge.remove();
     if (prevLabel) prevLabel.classList.remove('active');
     if (prevRadio) prevRadio.checked = false;
   }
@@ -510,7 +535,8 @@ function selectMethod(globalIdx, method) {
   const radio = document.getElementById(`r-${globalIdx}-${method}`);
   if (cell) {
     cell.classList.add('selected');
-    if (!cell.querySelector('.selected-badge')) {
+    // add ✓ badge only for image cells, not for none-option
+    if (method !== 'none' && !cell.querySelector('.selected-badge')) {
       const badge = document.createElement('div');
       badge.className = 'selected-badge';
       badge.textContent = '✓ Selected';
@@ -687,10 +713,12 @@ function updateProgress(fi) {
    SUBMIT
    ═══════════════════════════════════════════════════════════════ */
 function buildResults() {
-  const counts  = { sd: 0, ddpo: 0, b2: 0, ours: 0 };
-  const details = { sec2d: {}, sec3d: {} };
+  const counts2d = { sd: 0, ddpo: 0, b2: 0, ours: 0 };
+  const counts3d = { sd: 0, ddpo: 0, b2: 0, ours: 0, none: 0 };
+  const details  = { sec2d: {}, sec3d: {} };
 
   SECTIONS.forEach(sec => {
+    const counts = sec.id === 'sec3d' ? counts3d : counts2d;
     for (let loc = 1; loc <= sec.samples; loc++) {
       const g      = loc + sec.idxOffset;
       const method = answers[g];
@@ -707,11 +735,15 @@ function buildResults() {
     }
   });
 
-  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  const allCounts = {};
+  [...METHODS, 'none'].forEach(m => { allCounts[m] = (counts2d[m] || 0) + (counts3d[m] || 0); });
+  const total = Object.values(allCounts).reduce((a, b) => a + b, 0);
   const percentages = {};
-  METHODS.forEach(m => { percentages[m] = total > 0 ? +((counts[m] / total) * 100).toFixed(1) : 0; });
+  [...METHODS, 'none'].forEach(m => { percentages[m] = total > 0 ? +((allCounts[m] / total) * 100).toFixed(1) : 0; });
+
   return { username, session_seed: sessionSeed, timestamp: new Date().toISOString(),
-           summary: { counts, percentages, total }, details };
+           summary: { counts: allCounts, counts2d, counts3d, percentages, total },
+           details };
 }
 
 async function submitStudy() {
