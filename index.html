@@ -8,111 +8,137 @@
   *, *::before, *::after { box-sizing: border-box; }
   body {
     margin: 0; font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
-    color: #e0e0e0; min-height: 100vh;
+    background: #f4f5f7;
+    color: #1a1a2e; min-height: 100vh;
   }
   /* ─── Header ─────────────────────────────────────────────── */
   #header {
-    background: rgba(255,255,255,0.04);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    background: #fff;
+    border-bottom: 1px solid #e2e4e9;
     padding: 16px 40px; display: flex; align-items: center;
     justify-content: space-between; position: sticky; top: 0; z-index: 10;
   }
-  #header h1 { margin: 0; font-size: 18px; color: #fff; }
+  #header h1 { margin: 0; font-size: 18px; color: #1a1a2e; }
   #header .sub { font-size: 12px; color: #888; margin-top: 2px; }
   #header .user-tag { font-size: 13px; color: #888; }
-  #header .user-tag span { color: #aaa; font-weight: 600; }
+  #header .user-tag span { color: #5b52d6; font-weight: 600; }
   /* ─── Container ───────────────────────────────────────────── */
   #app { max-width: 1300px; margin: 0 auto; padding: 28px 24px 60px; }
   /* ─── Progress bar ─────────────────────────────────────────── */
   #progress { display: flex; gap: 6px; align-items: center; margin-bottom: 22px; }
   .pdot {
     height: 10px; border-radius: 5px; transition: all .3s;
-    background: rgba(255,255,255,0.15);
+    background: #d5d7e0;
   }
-  .pdot.done { background: #6c63ff; }
-  .pdot.active { background: #9b59b6; width: 28px !important; }
-  #prog-label { font-size: 12px; color: #555; margin-left: 6px; }
+  .pdot.done { background: #5b52d6; }
+  .pdot.active { background: #7c6fcd; width: 28px !important; }
+  #prog-label { font-size: 12px; color: #999; margin-left: 6px; }
   /* ─── Cards ───────────────────────────────────────────────── */
   .card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: #fff;
+    border: 1px solid #e2e4e9;
     border-radius: 12px; padding: 32px 36px; margin-bottom: 24px;
   }
-  .card h2 { font-size: 22px; color: #fff; margin: 0 0 10px; }
-  .card p { color: #999; font-size: 14px; line-height: 1.6; }
-  label { display: block; font-size: 13px; color: #aaa; margin-bottom: 6px; }
+  .card h2 { font-size: 22px; color: #1a1a2e; margin: 0 0 10px; }
+  .card p { color: #666; font-size: 14px; line-height: 1.6; }
+  label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; }
   input[type=text] {
     width: 100%; max-width: 360px; padding: 10px 14px;
-    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 8px; color: #fff; font-size: 15px; outline: none;
+    background: #f9f9fb; border: 1px solid #d0d3de;
+    border-radius: 8px; color: #1a1a2e; font-size: 15px; outline: none;
   }
-  input[type=text]:focus { border-color: #6c63ff; }
-  .err { color: #ff6b6b; font-size: 13px; margin-top: 6px; }
+  input[type=text]:focus { border-color: #5b52d6; }
+  .err { color: #e53e3e; font-size: 13px; margin-top: 6px; }
   /* ─── Buttons ─────────────────────────────────────────────── */
   .btn-primary {
-    background: linear-gradient(90deg, #6c63ff, #9b59b6);
+    background: linear-gradient(90deg, #5b52d6, #7c6fcd);
     color: #fff; border: none; border-radius: 8px;
     padding: 12px 28px; font-size: 15px; font-weight: 600; cursor: pointer;
     transition: opacity .2s;
   }
   .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn-secondary {
-    background: rgba(255,255,255,0.08); color: #ddd;
-    border: 1px solid rgba(255,255,255,0.15); border-radius: 8px;
+    background: #fff; color: #444;
+    border: 1px solid #d0d3de; border-radius: 8px;
     padding: 12px 28px; font-size: 15px; font-weight: 600; cursor: pointer;
   }
   .btn-submit {
-    background: linear-gradient(90deg, #27ae60, #2ecc71);
+    background: linear-gradient(90deg, #1e8c4e, #27ae60);
     color: #fff; border: none; border-radius: 8px;
     padding: 12px 28px; font-size: 15px; font-weight: 600; cursor: pointer;
   }
   .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
   /* ─── Warning banner ──────────────────────────────────────── */
   .warn {
-    background: rgba(255,193,7,0.12); border: 1px solid rgba(255,193,7,0.3);
-    border-radius: 8px; padding: 10px 16px; color: #ffc107;
+    background: #fffbeb; border: 1px solid #f6c94e;
+    border-radius: 8px; padding: 10px 16px; color: #92600a;
     font-size: 13px; margin-bottom: 16px;
   }
   /* ─── Sample rows ─────────────────────────────────────────── */
   .sample-row {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
+    background: #fff;
+    border: 1px solid #e2e4e9;
     border-radius: 10px; padding: 18px 18px 10px; margin-bottom: 20px;
     transition: border-color .2s;
   }
-  .sample-row.answered { border-color: rgba(108,99,255,0.3); }
+  .sample-row.answered { border-color: #a09ee0; }
   .prompt-line {
     display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px;
   }
   .sample-num {
-    font-size: 12px; font-weight: 700; color: #6c63ff; min-width: 32px;
+    font-size: 12px; font-weight: 700; color: #5b52d6; min-width: 32px;
   }
-  .prompt-text { font-size: 13px; color: #aaa; font-style: italic; }
+  /* 2D prompt — larger and more prominent */
+  .prompt-text {
+    font-size: 15px; font-weight: 600; color: #2d2a6e;
+    letter-spacing: 0.1px; line-height: 1.4;
+  }
+  /* 3D sticky prompt banner — fixed at bottom above the nav bar */
+  #sec3d-prompt-banner {
+    position: fixed; bottom: 58px; left: 0; right: 0; z-index: 49;
+    background: rgba(255,255,255,0.97);
+    border-top: 1px solid #a09ee0;
+    padding: 10px 40px;
+    display: none; align-items: center; gap: 12px;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  }
+  #sec3d-prompt-banner.visible { display: flex; }
+  #sec3d-prompt-banner .banner-label {
+    font-size: 11px; font-weight: 700; color: #5b52d6;
+    text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+  }
+  #sec3d-prompt-banner .banner-text {
+    font-size: 15px; font-weight: 600; color: #2d2a6e;
+  }
+  body.has-sticky-nav #app { padding-bottom: 120px; }
+  @media (max-width: 640px) {
+    #sec3d-prompt-banner { bottom: 54px; padding: 8px 16px; flex-direction: column; align-items: flex-start; gap: 2px; }
+    .prompt-text { font-size: 14px; }
+  }
   .images-grid {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
   }
   .img-cell {
     border-radius: 8px; overflow: hidden;
-    border: 2px solid rgba(255,255,255,0.08);
-    background: rgba(0,0,0,0.3); cursor: pointer;
+    border: 2px solid #e2e4e9;
+    background: #f4f5f7; cursor: pointer;
     transition: border-color .2s, transform .1s;
     position: relative;
   }
-  .img-cell:hover { border-color: rgba(108,99,255,0.5); transform: translateY(-1px); }
-  .img-cell.selected { border-color: #6c63ff; }
+  .img-cell:hover { border-color: #a09ee0; transform: translateY(-1px); }
+  .img-cell.selected { border-color: #5b52d6; }
   .img-cell img {
     width: 100%; display: block; aspect-ratio: 1/1; object-fit: cover;
   }
   .opt-label {
     position: absolute; top: 7px; left: 7px;
-    background: rgba(0,0,0,0.65); color: #fff;
+    background: rgba(0,0,0,0.55); color: #fff;
     font-size: 11px; font-weight: 700; border-radius: 4px;
     padding: 2px 7px; letter-spacing: 0.5px;
   }
   .selected-badge {
     position: absolute; bottom: 7px; right: 7px;
-    background: #6c63ff; color: #fff;
+    background: #5b52d6; color: #fff;
     font-size: 11px; border-radius: 20px;
     padding: 2px 8px; font-weight: 700;
   }
@@ -120,9 +146,9 @@
     display: flex; align-items: center; justify-content: center;
     padding: 9px 0 4px; gap: 7px;
   }
-  .radio-row input[type=radio] { accent-color: #6c63ff; width: 15px; height: 15px; cursor: pointer; }
-  .radio-row span { font-size: 12px; color: #666; }
-  .radio-row span.active { color: #9b8fff; }
+  .radio-row input[type=radio] { accent-color: #5b52d6; width: 15px; height: 15px; cursor: pointer; }
+  .radio-row span { font-size: 12px; color: #888; }
+  .radio-row span.active { color: #5b52d6; }
   /* ─── Nav row ──────────────────────────────────────────────── */
   .nav-row {
     display: flex; justify-content: space-between; align-items: center;
@@ -131,13 +157,13 @@
   /* ─── Summary table ───────────────────────────────────────── */
   table { width: 100%; border-collapse: collapse; margin-top: 12px; }
   th {
-    padding: 9px 14px; background: rgba(255,255,255,0.06);
-    color: #aaa; font-size: 13px; text-align: left;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 9px 14px; background: #f4f5f7;
+    color: #555; font-size: 13px; text-align: left;
+    border-bottom: 1px solid #e2e4e9;
   }
   td {
-    padding: 9px 14px; font-size: 14px; color: #ddd;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding: 9px 14px; font-size: 14px; color: #333;
+    border-bottom: 1px solid #eef0f3;
   }
   .bar-cell div {
     height: 8px; border-radius: 4px; min-width: 0; transition: width .4s;
@@ -151,8 +177,8 @@
     position: fixed; bottom: 0; left: 0; right: 0;
     display: none; justify-content: space-between; align-items: center;
     padding: 12px 40px 16px;
-    background: rgba(10,10,20,0.97);
-    border-top: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.97);
+    border-top: 1px solid #e2e4e9;
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     z-index: 50;
@@ -252,6 +278,11 @@
   <div id="prog-label"></div>
 </div>
 
+<div id="sec3d-prompt-banner">
+  <span class="banner-label">Prompt</span>
+  <span class="banner-text">A tv stand infront of a bed facing each other</span>
+</div>
+
 <div id="sticky-nav">
   <button class="btn-secondary" id="snav-back" onclick="goBack()">← Back</button>
   <button class="btn-primary"   id="snav-next">Next →</button>
@@ -266,7 +297,7 @@ const METHOD_LABELS = { sd:'SD', ddpo:'DDPO', b2:'B2Diff', ours:'Ours' };
 const METHOD_COLORS = { sd:'#888', ddpo:'#e67e22', b2:'#27ae60', ours:'#6c63ff' };
 const SAMPLES_PER_PAGE   = 10;
 const SAVE_URL           = 'https://user-study-website.onrender.com/save';
-const REQUIRE_ALL_ANSWERS = false; // set to true to block Next until every row is answered
+const REQUIRE_ALL_ANSWERS = false; // set to false to allow proceeding with unanswered rows
 
 /* Two sections: 2D (images/) and 3D (3d/).
    Section 1 sample indices: 1–30
@@ -288,7 +319,7 @@ const SECTIONS = [
     samples:    34,
     idxOffset:  30,         // global sample index = local idx + 30
     imgPath:    (method, _localIdx, filename) => `3d/${method}/${filename}`,
-    getPrompt:  (_localIdx) => '',
+    getPrompt:  (_localIdx) => 'A tv stand infront of a bed facing each other',
   },
 ];
 
@@ -423,10 +454,10 @@ function buildStudyPages() {
       div.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;
                     margin-bottom:16px;flex-wrap:wrap;gap:6px">
-          <h2 style="margin:0;font-size:20px;color:#fff">
+          <h2 style="margin:0;font-size:20px;color:#1a1a2e">
             ${sec.label} — Samples ${startLoc}–${endLoc}
           </h2>
-          <span style="font-size:13px;color:#666">Select the best image in each row</span>
+          <span style="font-size:13px;color:#999">Select the best image in each row</span>
         </div>
         <div class="warn" id="warn-${pageNum}" style="display:none">
           ⚠ <span id="warn-count-${pageNum}"></span> sample(s) not yet answered on this page.
@@ -444,8 +475,8 @@ function buildStudyPages() {
   brk.innerHTML = `
     <div class="card" style="text-align:center;padding:48px 36px">
       <div style="font-size:48px;margin-bottom:16px">🎉</div>
-      <h2 style="color:#fff;margin:0 0 12px">Section 1 Complete!</h2>
-      <p style="color:#999;max-width:480px;margin:0 auto 28px">
+      <h2 style="color:#1a1a2e;margin:0 0 12px">Section 1 Complete!</h2>
+      <p style="color:#666;max-width:480px;margin:0 auto 28px">
         You've finished the 2D image comparisons.<br>
         Next up: <strong style="color:#ddd">3D image comparisons</strong> — same task, different images.
       </p>
@@ -559,13 +590,18 @@ function updateStickyNav(fi) {
   const info    = sectionForFlowIdx(fi);
 
   if (!info) {
-    nav.classList.remove('visible');
-    document.body.classList.remove('has-sticky-nav');
-    return;
+  nav.classList.remove('visible');
+  document.body.classList.remove('has-sticky-nav');
+  document.getElementById('sec3d-prompt-banner').classList.remove('visible');
+  return;
   }
 
   nav.classList.add('visible');
   document.body.classList.add('has-sticky-nav');
+
+  const promptBanner = document.getElementById('sec3d-prompt-banner');
+  if (info.sec.id === 'sec3d') promptBanner.classList.add('visible');
+  else promptBanner.classList.remove('visible');
 
   const { sec, pgWithinSec } = info;
   const startLoc = (pgWithinSec - 1) * SAMPLES_PER_PAGE + 1;
@@ -760,7 +796,7 @@ function renderSummary(data) {
   document.getElementById('header').after(prog);
   prog.style.cssText = `
     display:none; gap:6px; align-items:center; padding:10px 40px;
-    background:rgba(255,255,255,0.02); border-bottom:1px solid rgba(255,255,255,0.05);
+    background:#fff; border-bottom:1px solid #e2e4e9;
   `;
 </script>
 </body>
