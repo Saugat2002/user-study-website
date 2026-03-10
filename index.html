@@ -578,6 +578,7 @@ function buildResults() {
 }
 
 async function submitStudy() {
+  document.body.innerHTML = 'Thank you for participating in the study!';
   const data = buildResults();
   try {
     await fetch(SAVE_URL, {
@@ -586,7 +587,6 @@ async function submitStudy() {
       body:    JSON.stringify(data),
     });
   } catch (_) { /* ignore network errors */ }
-  document.body.innerHTML = '';
 }
 
 /* ═══════════════════════════════════════════════════════════════
