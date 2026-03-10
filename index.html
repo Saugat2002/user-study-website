@@ -88,32 +88,9 @@
   .sample-num {
     font-size: 12px; font-weight: 700; color: #5b52d6; min-width: 32px;
   }
-  /* 2D prompt — larger and more prominent */
   .prompt-text {
     font-size: 15px; font-weight: 600; color: #2d2a6e;
     letter-spacing: 0.1px; line-height: 1.4;
-  }
-  /* 3D sticky prompt banner — fixed at bottom above the nav bar */
-  #sec3d-prompt-banner {
-    position: fixed; bottom: 58px; left: 0; right: 0; z-index: 49;
-    background: rgba(255,255,255,0.97);
-    border-top: 1px solid #a09ee0;
-    padding: 10px 40px;
-    display: none; align-items: center; gap: 12px;
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  }
-  #sec3d-prompt-banner.visible { display: flex; }
-  #sec3d-prompt-banner .banner-label {
-    font-size: 11px; font-weight: 700; color: #5b52d6;
-    text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
-  }
-  #sec3d-prompt-banner .banner-text {
-    font-size: 15px; font-weight: 600; color: #2d2a6e;
-  }
-  body.has-sticky-nav #app { padding-bottom: 120px; }
-  @media (max-width: 640px) {
-    #sec3d-prompt-banner { bottom: 54px; padding: 8px 16px; flex-direction: column; align-items: flex-start; gap: 2px; }
-    .prompt-text { font-size: 14px; }
   }
   .images-grid {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
@@ -168,21 +145,6 @@
   .bar-cell div {
     height: 8px; border-radius: 4px; min-width: 0; transition: width .4s;
   }
-  /* ─── None option (3D only) ─────────────────────────────────── */
-  .none-option {
-    margin-top: 10px; width: 100%;
-    padding: 10px 18px;
-    border: 2px dashed #d0d3de; border-radius: 8px;
-    background: #fafafa; cursor: pointer;
-    display: flex; align-items: center; gap: 10px;
-    transition: border-color .2s, background .2s;
-    font-size: 13px; color: #888;
-  }
-  .none-option:hover { border-color: #a09ee0; background: #f4f3ff; color: #5b52d6; }
-  .none-option.selected {
-    border-color: #5b52d6; background: #eeeeff; color: #5b52d6; font-weight: 600;
-  }
-  .none-option input[type=radio] { accent-color: #5b52d6; width: 15px; height: 15px; cursor: pointer; }
   /* ─── Hidden pages ─────────────────────────────────────────── */
   .page { display: none; }
   .page.active { display: block; }
@@ -217,7 +179,7 @@
     .card { padding: 18px 14px; }
     .card h2 { font-size: 17px; }
     .card p { font-size: 13px; }
-    input[type=text] { font-size: 16px; } /* prevents iOS zoom */
+    input[type=text] { font-size: 16px; }
     .images-grid { grid-template-columns: repeat(2, 1fr); gap: 7px; }
     .sample-row { padding: 12px 10px 8px; margin-bottom: 14px; }
     .prompt-text { font-size: 12px; }
@@ -246,7 +208,7 @@
 <div id="header">
   <div>
     <h1>Image Quality User Study</h1>
-    <div class="sub" id="header-sub">Compare AI-generated images across methods</div>
+    <div class="sub" id="header-sub">Compare AI-generated vanishing point images across methods</div>
   </div>
   <div class="user-tag" id="user-tag" style="display:none">
     Participant: <span id="user-tag-name"></span>
@@ -257,14 +219,13 @@
   <!-- ── Page 0: Name entry ─────────────────────────────────── -->
   <div class="page active" id="page-0">
     <div class="card">
-      <h2>Welcome to the User Study</h2>
+      <h2>Welcome to the VP User Study</h2>
       <p>
-        You will be shown sets of AI-generated images produced by four different methods.
-        For each sample, select the image you find most <strong style="color:#ddd">realistic and high-quality</strong>.
+        You will be shown sets of AI-generated vanishing point images produced by four different methods.
+        For each sample, select the image you find most <strong>realistic and high-quality</strong>.
         The column order is randomised per sample so you cannot guess which method is which.
       </p>
-      <p>This study has <strong style="color:#ddd">50 samples</strong> across two sections.<br>
-        Section 1: 30 × 2D images &nbsp;·&nbsp; Section 2: 20 × 3D images</p>
+      <p>This study has <strong>30 image samples</strong> across 3 pages (10 per page).</p>
       <label>Your Name *</label>
       <input type="text" id="name-input" placeholder="Enter your name" maxlength="60" />
       <div class="err" id="name-err"></div>
@@ -274,9 +235,9 @@
     </div>
   </div>
 
-  <!-- ── Study pages 1–3 injected here by JS ────────────────── -->
+  <!-- ── Study pages injected here by JS ────────────────── -->
 
-  <!-- ── Page 4: Done ───────────────────────────────────────── -->
+  <!-- ── Done page ───────────────────────────────────────── -->
   <div class="page" id="page-done">
     <div class="card" id="done-card">
       <h2 id="done-title">Submitting…</h2>
@@ -293,11 +254,6 @@
   <div id="prog-label"></div>
 </div>
 
-<div id="sec3d-prompt-banner">
-  <span class="banner-label">Prompt</span>
-  <span class="banner-text">A tv stand infront of a bed facing each other</span>
-</div>
-
 <div id="sticky-nav">
   <button class="btn-secondary" id="snav-back" onclick="goBack()">← Back</button>
   <button class="btn-primary"   id="snav-next">Next →</button>
@@ -307,55 +263,30 @@
 /* ═══════════════════════════════════════════════════════════════
    CONFIG
    ═══════════════════════════════════════════════════════════════ */
-const METHODS       = ['sd', 'ddpo', 'b2', 'ours'];
-const METHOD_LABELS = { sd:'SD', ddpo:'DDPO', b2:'B2Diff', ours:'Ours' };
-const METHOD_COLORS = { sd:'#888', ddpo:'#e67e22', b2:'#27ae60', ours:'#6c63ff' };
-const SAMPLES_PER_PAGE   = 10;
-const SAVE_URL           = 'https://user-study-website.onrender.com/save';
-const REQUIRE_ALL_ANSWERS = true; // set to false to allow proceeding with unanswered rows
-
-/* Two sections: 2D (images/) and 3D (3d/).
-   Section 1 sample indices: 1–30
-   Section 2 sample indices: 31–60  (offset keeps answers/colOrders keys unique) */
-const SECTIONS = [
-  {
-    id:         'sec2d',
-    label:      '2D Images',
-    pages:      3,
-    samples:    30,
-    idxOffset:  0,          // global sample index = local idx + offset
-    imgPath:    (method, localIdx, _filename) => `images/${method}/${localIdx}.png`,
-    getPrompt:  (localIdx) => prompts2d[localIdx] || prompts2d[String(localIdx)] || '',
-  },
-  {
-    id:         'sec3d',
-    label:      '3D Images',
-    pages:      2,
-    samples:    20,
-    idxOffset:  30,         // global sample index = local idx + 30
-    imgPath:    (method, _localIdx, filename) => `3d/${method}/${filename}`,
-    getPrompt:  (_localIdx) => 'A tv stand infront of a bed facing each other',
-  },
-];
+const METHODS         = ['ddpo', 'b2', 'ours'];
+const METHOD_LABELS   = { ddpo: 'DDPO', b2: 'B2Diff', ours: 'Ours' };
+const METHOD_COLORS   = { ddpo: '#e67e22', b2: '#27ae60', ours: '#6c63ff' };
+const SAMPLES_PER_PAGE       = 10;
+const TOTAL_SAMPLES          = 30;
+const TOTAL_PAGES            = 3;
+const SAVE_URL               = 'https://user-study-website.onrender.com/save';
+const REQUIRE_ALL_ANSWERS    = true;
 
 /* PAGE_FLOW: ordered list of page element IDs the user moves through */
 const PAGE_FLOW = [
-  'page-0',      // name entry
-  'page-1', 'page-2', 'page-3',          // section 1 (2D)
-  'page-break',                           // section divider
-  'page-4', 'page-5',                    // section 2 (3D)
+  'page-0',                        // name entry
+  'page-1', 'page-2', 'page-3',   // study pages
   'page-done',
 ];
 
 /* ═══════════════════════════════════════════════════════════════
    STATE
    ═══════════════════════════════════════════════════════════════ */
-let username  = '';
-let flowIdx   = 0;
-let answers   = {};     // { globalSampleIdx: method }
-let colOrders = {};     // { globalSampleIdx: [method, ...] }
-let prompts2d = {};     // loaded from images/prompts.json
-let samples3d = [];     // loaded from 3d/samples.json  (array of 30 filenames)
+let username    = '';
+let flowIdx     = 0;
+let answers     = {};     // { sampleIdx: method }
+let colOrders   = {};     // { sampleIdx: [method, ...] }
+let promptsVP   = {};     // loaded from vp/prompts.json
 const sessionSeed = Math.floor(Math.random() * 1e9);
 
 /* ═══════════════════════════════════════════════════════════════
@@ -373,28 +304,9 @@ function seededShuffle(arr, seed) {
 }
 
 function initOrders() {
-  const totalGlobal = SECTIONS.reduce((s, sec) => s + sec.samples, 0);
-  for (let g = 1; g <= totalGlobal; g++) {
-    colOrders[g] = seededShuffle(METHODS, (sessionSeed * 37 + g * 13) >>> 0);
+  for (let idx = 1; idx <= TOTAL_SAMPLES; idx++) {
+    colOrders[idx] = seededShuffle(METHODS, (sessionSeed * 37 + idx * 13) >>> 0);
   }
-}
-
-/* Correct page number = sum of all previous sections' pages + page within section */
-function pageNumFor(sec, pgWithinSec) {
-  let offset = 0;
-  for (const s of SECTIONS) {
-    if (s === sec) break;
-    offset += s.pages;
-  }
-  return offset + pgWithinSec;
-}
-
-/* Which section owns a given flow page index? */
-function sectionForFlowIdx(fi) {
-  // flow: 0=name, 1-3=2D pages, 4=break, 5-6=3D pages, 7=done
-  if (fi >= 1 && fi <= 3) return { sec: SECTIONS[0], pgWithinSec: fi };
-  if (fi >= 5 && fi <= 6) return { sec: SECTIONS[1], pgWithinSec: fi - 4 };
-  return null;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -402,17 +314,9 @@ function sectionForFlowIdx(fi) {
    ═══════════════════════════════════════════════════════════════ */
 async function loadData() {
   try {
-    const r = await fetch('images/prompts.json');
-    prompts2d = await r.json();
+    const r = await fetch('vp/prompts.json');
+    promptsVP = await r.json();
   } catch (_) { /* prompts stay empty */ }
-
-  try {
-    const r = await fetch('3d/samples.json');
-    samples3d = await r.json();
-  } catch (_) {
-    // fallback: generate placeholder names
-    for (let i = 0; i < 30; i++) samples3d.push(`sample_${String(i+1).padStart(2,'0')}.png`);
-  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -422,121 +326,87 @@ function buildStudyPages() {
   const app    = document.getElementById('app');
   const doneEl = document.getElementById('page-done');
 
-  SECTIONS.forEach((sec, secIdx) => {
-    for (let pg = 1; pg <= sec.pages; pg++) {
-      const pageNum  = pageNumFor(sec, pg);
-      const startLoc = (pg - 1) * SAMPLES_PER_PAGE + 1; // local 1-based
-      const endLoc   = Math.min(pg * SAMPLES_PER_PAGE, sec.samples);
+  for (let pg = 1; pg <= TOTAL_PAGES; pg++) {
+    const startIdx = (pg - 1) * SAMPLES_PER_PAGE + 1;
+    const endIdx   = Math.min(pg * SAMPLES_PER_PAGE, TOTAL_SAMPLES);
 
-      const div = document.createElement('div');
-      div.className = 'page';
-      div.id = `page-${pageNum}`;
+    const div = document.createElement('div');
+    div.className = 'page';
+    div.id = `page-${pg}`;
 
-      let rows = '';
-      for (let loc = startLoc; loc <= endLoc; loc++) {
-        const g        = loc + sec.idxOffset;            // global index
-        const filename = sec.id === 'sec3d' ? samples3d[loc - 1] : `${loc}.png`;
-        const prompt   = sec.getPrompt(loc);
-        const order    = colOrders[g];
-        let cells = '';
-        order.forEach((method, colIdx) => {
-          const src = sec.imgPath(method, loc, filename);
-          cells += `
-            <div class="img-cell" id="cell-${g}-${method}"
-                 onclick="selectMethod(${g},'${method}')">
-              <div class="opt-label">Option ${colIdx + 1}</div>
-              <img src="${src}" alt="option ${colIdx+1}" loading="lazy"
-                   onerror="this.parentElement.style.background='#1a1a2e'" />
-              <div class="radio-row">
-                <input type="radio" name="s${g}" id="r-${g}-${method}"
-                       onchange="selectMethod(${g},'${method}')"
-                       onclick="event.stopPropagation()" />
-                <span id="rlabel-${g}-${method}">Prefer this</span>
-              </div>
-            </div>`;
-        });
-
-        const noneCell = sec.id === 'sec3d' ? `
-          <div class="none-option" id="cell-${g}-none" onclick="selectMethod(${g},'none')">
-            <input type="radio" name="s${g}" id="r-${g}-none"
-                   onchange="selectMethod(${g},'none')"
-                   onclick="event.stopPropagation()" />
-            <span id="rlabel-${g}-none">None of the above — I don't prefer any option</span>
-          </div>` : '';
-
-        rows += `
-          <div class="sample-row" id="row-${g}">
-            <div class="prompt-line">
-              <span class="sample-num">#${loc}</span>
-              ${prompt ? `<span class="prompt-text">${prompt}</span>` : ''}
+    let rows = '';
+    for (let idx = startIdx; idx <= endIdx; idx++) {
+      const prompt = promptsVP[idx] || promptsVP[String(idx)] || '';
+      const order  = colOrders[idx];
+      let cells = '';
+      order.forEach((method, colIdx) => {
+        const src = `vp/${method}/${idx}.png`;
+        cells += `
+          <div class="img-cell" id="cell-${idx}-${method}"
+               onclick="selectMethod(${idx},'${method}')">
+            <div class="opt-label">Option ${colIdx + 1}</div>
+            <img src="${src}" alt="option ${colIdx + 1}" loading="lazy"
+                 onerror="this.parentElement.style.background='#1a1a2e'" />
+            <div class="radio-row">
+              <input type="radio" name="s${idx}" id="r-${idx}-${method}"
+                     onchange="selectMethod(${idx},'${method}')"
+                     onclick="event.stopPropagation()" />
+              <span id="rlabel-${idx}-${method}">Prefer this</span>
             </div>
-            <div class="images-grid">${cells}</div>
-            ${noneCell}
           </div>`;
-      }
+      });
 
-      div.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center;
-                    margin-bottom:16px;flex-wrap:wrap;gap:6px">
-          <h2 style="margin:0;font-size:20px;color:#1a1a2e">
-            ${sec.label} — Samples ${startLoc}–${endLoc}
-          </h2>
-          <span style="font-size:13px;color:#999">Select the best image in each row</span>
-        </div>
-        <div class="warn" id="warn-${pageNum}" style="display:none">
-          ⚠ <span id="warn-count-${pageNum}"></span> sample(s) not yet answered on this page.
-        </div>
-        ${rows}`;
-
-      app.insertBefore(div, doneEl);
+      rows += `
+        <div class="sample-row" id="row-${idx}">
+          <div class="prompt-line">
+            <span class="sample-num">#${idx}</span>
+            ${prompt ? `<span class="prompt-text">${prompt}</span>` : ''}
+          </div>
+          <div class="images-grid">${cells}</div>
+        </div>`;
     }
-  });
 
-  /* Section break page */
-  const brk = document.createElement('div');
-  brk.className = 'page';
-  brk.id = 'page-break';
-  brk.innerHTML = `
-    <div class="card" style="text-align:center;padding:48px 36px">
-      <div style="font-size:48px;margin-bottom:16px">🎉</div>
-      <h2 style="color:#1a1a2e;margin:0 0 12px">Section 1 Complete!</h2>
-      <p style="color:#666;max-width:480px;margin:0 auto 28px">
-        You've finished the 2D image comparisons.<br>
-        Next up: <strong style="color:#ddd">3D image comparisons</strong> — same task, different images.
-      </p>
-      <button class="btn-primary" onclick="navigate(1)" style="font-size:16px;padding:14px 36px">
-        Continue to 3D Section →
-      </button>
-    </div>`;
-  app.insertBefore(brk, doneEl);
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;
+                  margin-bottom:16px;flex-wrap:wrap;gap:6px">
+        <h2 style="margin:0;font-size:20px;color:#1a1a2e">
+          VP Images — Samples ${startIdx}–${endIdx}
+        </h2>
+        <span style="font-size:30px;color:#000">Select the image in terms of best quality</span>
+      </div>
+      <div class="warn" id="warn-${pg}" style="display:none">
+        ⚠ <span id="warn-count-${pg}"></span> sample(s) not yet answered on this page.
+      </div>
+      ${rows}`;
+
+    app.insertBefore(div, doneEl);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
    SELECTION
    ═══════════════════════════════════════════════════════════════ */
-function selectMethod(globalIdx, method) {
-  const prev = answers[globalIdx];
+function selectMethod(idx, method) {
+  const prev = answers[idx];
   if (prev) {
-    const prevCell  = document.getElementById(`cell-${globalIdx}-${prev}`);
-    const prevLabel = document.getElementById(`rlabel-${globalIdx}-${prev}`);
-    const prevRadio = document.getElementById(`r-${globalIdx}-${prev}`);
+    const prevCell  = document.getElementById(`cell-${idx}-${prev}`);
+    const prevLabel = document.getElementById(`rlabel-${idx}-${prev}`);
+    const prevRadio = document.getElementById(`r-${idx}-${prev}`);
     if (prevCell)  prevCell.classList.remove('selected');
-    // remove ✓ badge only from img-cells, not from none-option
     const prevBadge = prevCell && prevCell.querySelector('.selected-badge');
     if (prevBadge) prevBadge.remove();
     if (prevLabel) prevLabel.classList.remove('active');
     if (prevRadio) prevRadio.checked = false;
   }
 
-  answers[globalIdx] = method;
+  answers[idx] = method;
 
-  const cell  = document.getElementById(`cell-${globalIdx}-${method}`);
-  const label = document.getElementById(`rlabel-${globalIdx}-${method}`);
-  const radio = document.getElementById(`r-${globalIdx}-${method}`);
+  const cell  = document.getElementById(`cell-${idx}-${method}`);
+  const label = document.getElementById(`rlabel-${idx}-${method}`);
+  const radio = document.getElementById(`r-${idx}-${method}`);
   if (cell) {
     cell.classList.add('selected');
-    // add ✓ badge only for image cells, not for none-option
-    if (method !== 'none' && !cell.querySelector('.selected-badge')) {
+    if (!cell.querySelector('.selected-badge')) {
       const badge = document.createElement('div');
       badge.className = 'selected-badge';
       badge.textContent = '✓ Selected';
@@ -546,7 +416,7 @@ function selectMethod(globalIdx, method) {
   if (label) label.classList.add('active');
   if (radio) radio.checked = true;
 
-  const row = document.getElementById(`row-${globalIdx}`);
+  const row = document.getElementById(`row-${idx}`);
   if (row) row.classList.add('answered');
 }
 
@@ -563,7 +433,6 @@ function showPage(fi) {
   updateStickyNav(fi);
 }
 
-/* fi = flow index */
 function navigate(delta) {
   flowIdx = Math.max(0, Math.min(PAGE_FLOW.length - 1, flowIdx + delta));
   showPage(flowIdx);
@@ -581,16 +450,14 @@ function startStudy() {
 
 function goBack() {
   if (flowIdx <= 1) { flowIdx = 0; showPage(0); return; }
-  // skip break page when going back
-  if (PAGE_FLOW[flowIdx - 1] === 'page-break') flowIdx -= 2;
-  else flowIdx--;
+  flowIdx--;
   showPage(flowIdx);
 }
 
-function goNext(pageNum, startG, endG) {
+function goNext(pageNum, startIdx, endIdx) {
   const missing = [];
-  for (let g = startG; g <= endG; g++) {
-    if (!answers[g]) missing.push(g);
+  for (let idx = startIdx; idx <= endIdx; idx++) {
+    if (!answers[idx]) missing.push(idx);
   }
   const warn = document.getElementById(`warn-${pageNum}`);
   const wc   = document.getElementById(`warn-count-${pageNum}`);
@@ -602,7 +469,6 @@ function goNext(pageNum, startG, endG) {
   }
   warn.style.display = 'none';
 
-  // last page of last section → submit
   if (PAGE_FLOW[flowIdx + 1] === 'page-done') {
     submitStudy();
   } else {
@@ -613,98 +479,66 @@ function goNext(pageNum, startG, endG) {
 function updateStickyNav(fi) {
   const nav     = document.getElementById('sticky-nav');
   const nextBtn = document.getElementById('snav-next');
-  const info    = sectionForFlowIdx(fi);
 
-  if (!info) {
-  nav.classList.remove('visible');
-  document.body.classList.remove('has-sticky-nav');
-  document.getElementById('sec3d-prompt-banner').classList.remove('visible');
-  return;
+  // fi=0 (name), fi=4 (done) — hide nav
+  if (fi === 0 || PAGE_FLOW[fi] === 'page-done') {
+    nav.classList.remove('visible');
+    document.body.classList.remove('has-sticky-nav');
+    return;
   }
 
   nav.classList.add('visible');
   document.body.classList.add('has-sticky-nav');
 
-  const promptBanner = document.getElementById('sec3d-prompt-banner');
-  if (info.sec.id === 'sec3d') promptBanner.classList.add('visible');
-  else promptBanner.classList.remove('visible');
-
-  const { sec, pgWithinSec } = info;
-  const startLoc = (pgWithinSec - 1) * SAMPLES_PER_PAGE + 1;
-  const endLoc   = Math.min(pgWithinSec * SAMPLES_PER_PAGE, sec.samples);
-  const startG   = startLoc + sec.idxOffset;
-  const endG     = endLoc   + sec.idxOffset;
-  const pageNum  = pageNumFor(sec, pgWithinSec);
+  const pageNum  = fi;                                        // fi 1-3 maps to page 1-3
+  const startIdx = (pageNum - 1) * SAMPLES_PER_PAGE + 1;
+  const endIdx   = Math.min(pageNum * SAMPLES_PER_PAGE, TOTAL_SAMPLES);
   const isLast   = PAGE_FLOW[fi + 1] === 'page-done';
 
   nextBtn.className   = isLast ? 'btn-submit' : 'btn-primary';
   nextBtn.textContent = isLast ? 'Submit Study ✓' : 'Next →';
-  nextBtn.onclick     = () => goNext(pageNum, startG, endG);
+  nextBtn.onclick     = () => goNext(pageNum, startIdx, endIdx);
 }
 
 function updateHeader(fi) {
   const sub   = document.getElementById('header-sub');
   const utag  = document.getElementById('user-tag');
   const uname = document.getElementById('user-tag-name');
-  const info  = sectionForFlowIdx(fi);
 
   if (fi === 0) {
-    sub.textContent    = 'Compare AI-generated images across methods';
+    sub.textContent    = 'Compare AI-generated vanishing point images across methods';
     utag.style.display = 'none';
   } else if (PAGE_FLOW[fi] === 'page-done') {
     sub.textContent    = 'Study complete';
     utag.style.display = 'block';
     uname.textContent  = username;
-  } else if (PAGE_FLOW[fi] === 'page-break') {
-    sub.textContent    = 'Section 1 of 2 complete';
-    utag.style.display = 'block';
-    uname.textContent  = username;
-  } else if (info) {
-    const totalStudyPages = SECTIONS.reduce((s, sec) => s + sec.pages, 0);
-    const overallPage     = pageNumFor(info.sec, info.pgWithinSec);
-    sub.textContent    = `${info.sec.label}  ·  Page ${info.pgWithinSec} of ${info.sec.pages}  ·  Overall ${overallPage}/${totalStudyPages}`;
+  } else {
+    sub.textContent    = `VP Images  ·  Page ${fi} of ${TOTAL_PAGES}`;
     utag.style.display = 'block';
     uname.textContent  = username;
   }
 }
 
 function updateProgress(fi) {
-  const bar  = document.getElementById('progress');
-  const info = sectionForFlowIdx(fi);
-  if (!info) { bar.style.display = 'none'; return; }
-
-  const { sec, pgWithinSec } = info;
-  const totalStudyPages = SECTIONS.reduce((s, s2) => s + s2.pages, 0);
-  const overallPage     = pageNumFor(sec, pgWithinSec);
+  const bar = document.getElementById('progress');
+  if (fi === 0 || PAGE_FLOW[fi] === 'page-done') {
+    bar.style.display = 'none';
+    return;
+  }
 
   bar.style.display = 'flex';
   bar.innerHTML = '';
 
-  SECTIONS.forEach((s, si) => {
-    const lbl = document.createElement('span');
-    lbl.textContent = s.label;
-    lbl.style.cssText = `font-size:11px;color:${s === sec ? '#aaa' : '#444'};margin-right:2px`;
-    bar.appendChild(lbl);
-
-    for (let i = 1; i <= s.pages; i++) {
-      const globalI = pageNumFor(s, i);
-      const d = document.createElement('div');
-      d.className = 'pdot'
-        + (globalI < overallPage ? ' done' : globalI === overallPage ? ' active' : '');
-      d.style.width = (globalI === overallPage ? '28' : '10') + 'px';
-      bar.appendChild(d);
-    }
-
-    if (si < SECTIONS.length - 1) {
-      const sep = document.createElement('span');
-      sep.textContent = '|';
-      sep.style.cssText = 'color:#333;font-size:12px;margin:0 4px';
-      bar.appendChild(sep);
-    }
-  });
+  for (let i = 1; i <= TOTAL_PAGES; i++) {
+    const d = document.createElement('div');
+    d.className = 'pdot'
+      + (i < fi ? ' done' : i === fi ? ' active' : '');
+    d.style.width = (i === fi ? '28' : '10') + 'px';
+    bar.appendChild(d);
+  }
 
   const lbl = document.createElement('span');
-  lbl.textContent = `${overallPage}/${totalStudyPages}`;
+  lbl.textContent = `${fi}/${TOTAL_PAGES}`;
   lbl.style.cssText = 'font-size:12px;color:#666;margin-left:8px';
   bar.appendChild(lbl);
 }
@@ -713,99 +547,46 @@ function updateProgress(fi) {
    SUBMIT
    ═══════════════════════════════════════════════════════════════ */
 function buildResults() {
-  const counts2d = { sd: 0, ddpo: 0, b2: 0, ours: 0 };
-  const counts3d = { sd: 0, ddpo: 0, b2: 0, ours: 0, none: 0 };
-  const details  = { sec2d: {}, sec3d: {} };
+  const counts  = { ddpo: 0, b2: 0, ours: 0 };
+  const details = {};
 
-  SECTIONS.forEach(sec => {
-    const counts = sec.id === 'sec3d' ? counts3d : counts2d;
-    for (let loc = 1; loc <= sec.samples; loc++) {
-      const g      = loc + sec.idxOffset;
-      const method = answers[g];
-      if (method) {
-        counts[method] = (counts[method] || 0) + 1;
-        const filename = sec.id === 'sec3d' ? samples3d[loc - 1] : `${loc}.png`;
-        details[sec.id][loc] = {
-          prompt:           sec.getPrompt(loc),
-          filename,
-          preferred_method: method,
-          column_order:     colOrders[g],
-        };
-      }
+  for (let idx = 1; idx <= TOTAL_SAMPLES; idx++) {
+    const method = answers[idx];
+    if (method) {
+      counts[method] = (counts[method] || 0) + 1;
+      details[idx] = {
+        prompt:           promptsVP[idx] || promptsVP[String(idx)] || '',
+        filename:         `${idx}.png`,
+        preferred_method: method,
+        column_order:     colOrders[idx],
+      };
     }
-  });
+  }
 
-  const allCounts = {};
-  [...METHODS, 'none'].forEach(m => { allCounts[m] = (counts2d[m] || 0) + (counts3d[m] || 0); });
-  const total = Object.values(allCounts).reduce((a, b) => a + b, 0);
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
   const percentages = {};
-  [...METHODS, 'none'].forEach(m => { percentages[m] = total > 0 ? +((allCounts[m] / total) * 100).toFixed(1) : 0; });
+  METHODS.forEach(m => { percentages[m] = total > 0 ? +((counts[m] / total) * 100).toFixed(1) : 0; });
 
-  return { username, session_seed: sessionSeed, timestamp: new Date().toISOString(),
-           summary: { counts: allCounts, counts2d, counts3d, percentages, total },
-           details };
+  return {
+    study_type:   'vp',
+    username,
+    session_seed: sessionSeed,
+    timestamp:    new Date().toISOString(),
+    summary:      { counts, percentages, total },
+    details,
+  };
 }
 
 async function submitStudy() {
-  flowIdx = PAGE_FLOW.indexOf('page-done');
-  showPage(flowIdx);
   const data = buildResults();
-
-  const doneTitle = document.getElementById('done-title');
-  const doneMsg   = document.getElementById('done-msg');
-
   try {
-    const res  = await fetch(SAVE_URL, { method:'POST',
-      headers: { 'Content-Type':'application/json' }, body: JSON.stringify(data) });
-    const json = await res.json();
-    if (json.status === 'ok') {
-      doneTitle.textContent = `✓ Thank you, ${username}!`;
-      doneTitle.style.color = '#2ecc71';
-      doneMsg.textContent   = `Your responses have been saved as: ${json.file}`;
-    } else { throw new Error(json.message); }
-  } catch (e) {
-    doneTitle.textContent = `✓ Study Complete — ${username}`;
-    doneTitle.style.color = '#f0c040';
-    doneMsg.innerHTML =
-      `Server not available (${e.message || 'could not connect'}).<br>
-       <button class="btn-primary" onclick="downloadJSON()" style="margin-top:12px">
-         ⬇ Download Results JSON
-       </button>`;
-    window.pendingResults = data;
-  }
-  renderSummary(data);
-}
-
-function downloadJSON() {
-  const data = window.pendingResults;
-  if (!data) return;
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  const safe = data.username.replace(/[^a-z0-9_-]/gi, '_');
-  a.download = `${safe}_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.json`;
-  a.href = url; a.click();
-  URL.revokeObjectURL(url);
-}
-
-function renderSummary(data) {
-  const area = document.getElementById('summary-area');
-  const { counts, percentages, total } = data.summary;
-  let rows = '';
-  METHODS.forEach(m => {
-    const c = counts[m] || 0, pct = percentages[m] || 0;
-    rows += `<tr>
-      <td>${METHOD_LABELS[m]}</td><td>${c}</td><td>${pct}%</td>
-      <td class="bar-cell"><div style="width:${pct}%;background:${METHOD_COLORS[m]}"></div></td>
-    </tr>`;
-  });
-  area.innerHTML = `
-    <h3 style="color:#ddd;font-size:16px;margin-top:28px">Your Preference Summary</h3>
-    <p style="color:#888;font-size:13px">${total} samples answered across both sections</p>
-    <table>
-      <thead><tr><th>Method</th><th>Count</th><th>%</th><th style="width:200px">Bar</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+    await fetch(SAVE_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(data),
+    });
+  } catch (_) { /* ignore network errors */ }
+  document.body.innerHTML = '';
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -821,9 +602,8 @@ function renderSummary(data) {
 })();
 </script>
 
-<!-- Progress bar rendered outside #app so it's always visible -->
+<!-- Move progress bar into a sticky position below header -->
 <script>
-  // Move progress bar into a sticky position below header
   const prog = document.getElementById('progress');
   document.getElementById('header').after(prog);
   prog.style.cssText = `
